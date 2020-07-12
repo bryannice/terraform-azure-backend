@@ -1,61 +1,103 @@
-# template-repository
+# terraform-azure-backend
 
-This repository is a template repository.
+![Terraform](assets/terraform-icon.png)
 
-## Files
+This pattern setups the backend storage account to hold the Terraform state files for all resources provisioned.
 
-Template files:
+## Dependencies
 
-1. .github/
-    1. ISSUE\_TEMPLATE/
-        1. [bug\_report.md](#githubissue_templatebug_reportmd)
-        1. [feature\_request.md](#githubissue_templatefeature_requestmd)
-1. [LICENSE](#license)
-1. [PULL\_REQUEST\_TEMPLATE.md](#pull_request_templatemd)
-1. [README.md](#readmemd)
+This pattern uses the following
 
-## PULL\_REQUEST\_TEMPLATE.md
+| Dependency | Description |
+| ---------- | ----------- |
+| bryannice/terraform-azure:1.2.0 | Docker image used to execute this pattern |
+| bryan-nice/terraform-azure-modules?ref=1.0.0 | Terraform Azure module version used in this pattern |
 
-The `PULL_REQUEST_TEMPLATE.md` file asks a pull requester for information about the pull request.
+## Docker Commands
 
-The [PULL_REQUEST_TEMPLATE.md](PULL_REQUEST_TEMPLATE.md) file in this repository
-is an example that can be modified.
+Create backend:
 
-### How to create PULL\_REQUEST\_TEMPLATE.md
+```dockerfile
+docker run \
+    -it \
+    --rm \
+    --env SUBSCRIPTION_OWNER=<Owner of Azure Subscription> \
+    -v ${PWD}:/home/terraform \
+    bryannice/terraform-azure:1.2.0 \
+    make tf-backend
+```
 
-1. Option #1: Using GitHub's "Wizard"
-    1. [github.com](https://github.com/) > (choose repository) > Insights > Community > Pull request template > "Add" button
-1. Option #2: Manual file creation
-    1. See GitHub's [Creating a pull request template for your repository](https://help.github.com/articles/creating-a-pull-request-template-for-your-repository/)
+Destroy backend:
 
-## .github/ISSUE\_TEMPLATE/bug\_report.md
+```dockerfile
+docker run \
+    -it \
+    --rm \
+    --env SUBSCRIPTION_OWNER=<Owner of Azure Subscription> \
+    -v ${PWD}:/home/terraform \
+    bryannice/terraform-azure:1.2.0 \
+    make tf-destroy
+```
 
-A template presented to the Contributor when creating an issue that reports a bug.
+Clean up files:
 
-The [bug_report.md](.github/ISSUE_TEMPLATE/bug_report.md) file in this repository
-is an example that can be modified.
+```dockerfile
+docker run \
+    -it \
+    --rm \
+    --env SUBSCRIPTION_OWNER=<Owner of Azure Subscription> \
+    -v ${PWD}:/home/terraform \
+    bryannice/terraform-azure:1.2.0 \
+    make clean
+```
 
-### How to create .github/ISSUE\_TEMPLATE/bug\_report.md
+## Make Targets
 
-1. Option #1: Using GitHub's "Wizard"
-    1. [github.com](https://github.com/) > (choose repository) > Insights > Community > Issue templates > "Add" button > Add template: Bug report
+These make targets requires the Azure credential context before running. There is logic to check if it exists. If the required environment variables are not set, it will prompt the user to log in. All of these commands are expected to be excuted within the docker container bryannice/terraform-azure:1.2.0 or an environment with Terraform and Azure Cli installed.
 
-## .github/ISSUE\_TEMPLATE/feature\_request.md
+| Variable | Description |
+| -------- | ----------- |
+| TF_VAR_SUBSCRIPTION_ID | Target Azure subscription ID |
+| TF_VAR_TENANT_ID | Target Azure tenant ID | 
+| TF_VAR_CLIENT_ID | Azure client ID to use |
+| TF_VAR_CLIENT_SECRET | Azure client secret to authenticate |
 
-A template presented to the Contributor when creating an issue that requests a feature.
+To create the backend infrastructure
 
-The [feature_request.md](.github/ISSUE_TEMPLATE/feature_request.md) file in this repository
-is an example that can be modified.
+```makefile
+make tf-backend
+```
 
-### How to create .github/ISSUE\_TEMPLATE/feature\_request.md
+To destroy the backend infrastructure
 
-1. Option #1: Using GitHub's "Wizard"
-    1. [github.com](https://github.com/) > (choose repository) > Insights > Community > Issue templates > "Add" button > Add template: Feature request
+```makefile
+make tf-destroy
+```
+
+To init terraform
+
+```makefile
+make tf-init
+```
+
+To apply terraform
+
+```makefile
+make tf-apply
+```
+
+To format the terraform files
+
+```makefile
+make tf-fmt
+```
+
+To clean up terraform files
+
+```makefile
+make clean
+```
 
 ## License
 
 [GPLv3](LICENSE)
-
-## References
-
-* [Markdownlint](https://dlaa.me/markdownlint/)
